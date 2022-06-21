@@ -1,0 +1,13 @@
+{
+  "PublisherOptions": {
+    "Host": "127.0.0.1",
+    "Port": 22,
+    "User": "root",
+    "Password": "secret_password",
+    "ServiceName": "service_name",
+    "PathOnServer": "path_on_server",
+    "LocalPath": "..\\publish",
+    "Project": "..\\project_folder\\project_name.csproj",
+    "LoadConfigFiles":  false
+  }
+}
