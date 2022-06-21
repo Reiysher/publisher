@@ -2,6 +2,7 @@
 
 internal sealed class Program
 {
+
     public static void Main(string[] args)
     {
         var options = ConfigurationHelper.GetConfiguration();
@@ -17,7 +18,7 @@ internal sealed class Program
 
         localPath = Path.GetFullPath(localPath) + Path.DirectorySeparatorChar;
 
-        var localFiles = GetLocalFiles(localPath);
+        var localFiles = GetLocalFiles(localPath, options.LoadConfigFiles);
 
         Console.WriteLine();
         Console.WriteLine($"Uploading {localFiles.Count} files to {options.User}@{options.User}:{options.Port}{options.PathOnServer}");
@@ -42,7 +43,7 @@ internal sealed class Program
         var info = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = "publish " + options.Solution + " --output " + options.LocalPath + " --runtime linux-x64 --self-contained"
+            Arguments = "publish " + options.Project + " --output " + options.LocalPath + " --runtime linux-x64 --self-contained"
         };
 
         var process = Process.Start(info);
@@ -54,12 +55,24 @@ internal sealed class Program
         return exitCode == 0;
     }
 
-    private static List<LocalFile> GetLocalFiles(string localPath)
+    private static List<LocalFile> GetLocalFiles(string localPath, bool loadConfigFiles)
     {
         var localFiles = Directory
             .EnumerateFiles(localPath, "*.*", SearchOption.AllDirectories)
+            .Where(f => loadConfigFiles || !f.EndsWith(".json"))
             .Select(f => new LocalFile(localPath, f))
             .ToList();
         return localFiles;
+    }
+    private static string CalculateMD5(string filename)
+    {
+        using (var md5 = MD5.Create())
+        {
+            using (var stream = File.OpenRead(filename))
+            {
+                var hash = md5.ComputeHash(stream);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+        }
     }
 }

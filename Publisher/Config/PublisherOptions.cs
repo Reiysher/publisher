@@ -9,5 +9,6 @@ internal sealed class PublisherOptions
     public string ServiceName { get; set; }
     public string PathOnServer { get; set; }
     public string LocalPath { get; set; }
-    public string Solution { get; set; }
+    public string Project { get; set; }
+    public bool LoadConfigFiles { get; set; }
 }
