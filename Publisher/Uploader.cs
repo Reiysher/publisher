@@ -46,6 +46,7 @@ internal sealed class Uploader
             }
 
             Console.WriteLine($"Starting \"{service}.service\" ...");
+            //client.RunCommand($"sudo chmod +x /opt/mfl/MFL.Host");
             client.RunCommand($"sudo systemctl enable {service}.service");
             client.RunCommand($"sudo systemctl start {service}.service");
         }
