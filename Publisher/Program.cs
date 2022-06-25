@@ -26,7 +26,7 @@ internal sealed class Program
         var localFiles = await GetLocalFiles(localPath);
 
         Console.WriteLine();
-        Console.WriteLine($"Uploading {localFiles.Count} files to {_options.User}@{_options.User}:{_options.Port}{_options.PathOnServer}");
+        Console.WriteLine($"Uploading {localFiles.Count} files...");
 
         try
         {
@@ -38,12 +38,21 @@ internal sealed class Program
         {
             Console.WriteLine($"Error uploading files to server: {ex.Message}");
         }
+
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.WriteLine("Done.");
+        Console.ForegroundColor = ConsoleColor.White;
+
         Directory.Delete(localPath, true);
+
+        Console.ReadKey();
     }
 
     private static bool PublishLocally()
     {
-        Console.WriteLine($"Starting `dotnet publish`");
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        Console.WriteLine($"Publishing...");
+        Console.ForegroundColor = ConsoleColor.White;
 
         var info = new ProcessStartInfo
         {
@@ -55,7 +64,18 @@ internal sealed class Program
         process.WaitForExit();
         var exitCode = process.ExitCode;
 
-        Console.WriteLine($"dotnet publish exited with code {exitCode}");
+        if(exitCode == 0)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine($"Build success");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine($"Build failed");
+        }
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine("<<<<================================>>>>");
 
         return exitCode == 0;
     }
@@ -68,7 +88,7 @@ internal sealed class Program
         if (!Directory.Exists(cacheDirectory))
             Directory.CreateDirectory(cacheDirectory);
 
-        var cacheFile = $"{cacheDirectory}/{_options.ServiceName}.json";
+        var cacheFile = $"{cacheDirectory}/cache.json";
         if (File.Exists(cacheFile))
         {
             using FileStream fs = new(cacheFile, FileMode.OpenOrCreate);
@@ -78,13 +98,15 @@ internal sealed class Program
         var localFiles = Directory
             .EnumerateFiles(localPath, "*.*", SearchOption.AllDirectories)
             .Where(f => _options.LoadConfigFiles || !f.EndsWith(".json"))
-            .Select(f => new LocalFile(localPath, f))
+            //.Select(f => new LocalFile(localPath, f))
             .ToList();
+
+        Console.WriteLine("Calculating hash...");
 
         Dictionary<string, string> newCache = new();
         localFiles.ForEach(file =>
         {
-            newCache.Add(file.FileName, CalculateHash(file.FileName));
+            newCache.Add(file, CalculateHash(file));
         });
 
         var result = newCache
@@ -106,7 +128,12 @@ internal sealed class Program
         using var md5 = MD5.Create();
         using var stream = File.OpenRead(filename);
 
-        var hash = md5.ComputeHash(stream);
-        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        var hash = BitConverter
+            .ToString(md5.ComputeHash(stream))
+            .Replace("-", "")
+            .ToLowerInvariant();
+
+        Console.WriteLine($"{filename} - {hash}");
+        return hash;
     }
 }
