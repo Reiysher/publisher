@@ -26,7 +26,9 @@ internal sealed class Program
         var localFiles = await GetLocalFiles(localPath);
 
         Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.WriteLine($"Uploading {localFiles.Count} files...");
+        Console.ForegroundColor = ConsoleColor.White;
 
         try
         {
@@ -36,7 +38,9 @@ internal sealed class Program
         }
         catch (Exception ex)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine($"Error uploading files to server: {ex.Message}");
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -51,7 +55,7 @@ internal sealed class Program
     private static bool PublishLocally()
     {
         Console.ForegroundColor = ConsoleColor.DarkYellow;
-        Console.WriteLine($"Publishing...");
+        Console.WriteLine($"Build...");
         Console.ForegroundColor = ConsoleColor.White;
 
         var info = new ProcessStartInfo
@@ -75,7 +79,6 @@ internal sealed class Program
             Console.WriteLine($"Build failed");
         }
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine("<<<<================================>>>>");
 
         return exitCode == 0;
     }
@@ -101,7 +104,10 @@ internal sealed class Program
             //.Select(f => new LocalFile(localPath, f))
             .ToList();
 
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.WriteLine("Calculating hash...");
+        Console.ForegroundColor = ConsoleColor.White;
 
         Dictionary<string, string> newCache = new();
         localFiles.ForEach(file =>
